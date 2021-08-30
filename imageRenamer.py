@@ -157,23 +157,31 @@ class ImageRenamer:
             for key, val in tags.items():
                 logger.debug(f"{key}: \t {repr(val)}")
 
-        try:
-            exifTag = tags['EXIF DateTimeOriginal']
-            #exifTag = tags['EXIF DateTimeDigitized']
-            #exifTag = tags['Image DateTime']
-        except:
-            logger.info(f"EXIF data entry invalid for {filename}")
-            return None
+        tagIds = ['EXIF DateTimeOriginal', 'EXIF DateTimeDigitized', 'Image DateTime']
+        datetime_objs = dict.fromkeys(tagIds)
+        for tagId in tagIds:
 
-        try:
-            # extract relevant part
-            datetime_str = exifTag.values
-            datetime_obj = datetime.strptime(datetime_str, "%Y:%m:%d %H:%M:%S")
-        except:
-            logger.error(f"EXIF entry string {datetime_str} not parsable in {filename}")
-            raise ValueError(f"EXIF entry string {datetime_str} not parsable in {filename}")
+            try:
+                tagValue = tags[tagId]
+            except:
+                logger.info(f"EXIF tag ID {tagId} invalid for {filename}")
+                datetime_objs[tagId] = None
+                continue
 
-        logger.info(f"EXIF date {datetime_obj} extracted from {filename}")
+            try:
+                # extract relevant part
+                datetime_str = tagValue.values
+                datetime_objs[tagId] = datetime.strptime(datetime_str, "%Y:%m:%d %H:%M:%S")
+            except:
+                logger.warning(f"EXIF tag {tagId} string {datetime_str} not parsable in {filename}")
+                datetime_objs[tagId] = None
+                continue
+
+            logger.info(f"EXIF tag {tagId} parsed to {datetime_objs} from {filename}")
+
+        # find oldest
+        datetime_obj = self.findOldestTime(datetime_objs)
+        logger.info(f"Extracted {datetime_obj} via EXIF from {filename}")
 
         return datetime_obj
 
