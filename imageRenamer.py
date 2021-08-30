@@ -15,7 +15,7 @@ class ImageRenamer:
     __DATE_FORMAT = "%Y-%m-%d"
     __DATETIME_FORMAT = f"{__DATE_FORMAT}_%H-%M-%S"
 
-    def __init__(self, inputFolder, outputFolder):
+    def __init__(self, inputFolder, outputFolder, dryRun, doCopy):
         self.__inputFolder = inputFolder
         self.__outputFolder = outputFolder
         self.__isDryRun = True
@@ -62,7 +62,7 @@ class ImageRenamer:
         finalRenames = self.fixCollisions(proposedRenames)
 
         # Actual Renames
-        self.doRename(finalRenames)
+        self.doRename(finalRenames, doCopy)
 
     def findOldestTime(self, times):
         if len(times) < 1:
@@ -91,8 +91,7 @@ class ImageRenamer:
             else:
                 duplicatesNew.add(new)
                 nEntriesTotalNew[new] = nEntriesTotalNew[new]+1
-
-
+        
         # find all entries that have been marked as duplicates and rename them by adding a counter
         for old, new in proposal.items():
             if new in duplicatesNew:
@@ -102,18 +101,25 @@ class ImageRenamer:
                 proposal[old] = newFilename
                 logger.info(f"Add duplicate-counter for old={old} to new={newFilename}")
 
-        
         return proposal
 
 
-    def doRename(self, finalFilenames):
+    def doRename(self, finalFilenames, doCopy):
         # Rename the file
         for old, new in finalFilenames.items():
             if not self.__isDryRun:
-                logger.info(f"Renaming/moving {old} to {new}")
-                #os.rename(old, new)
+                if doCopy:
+                    logger.info(f"Copying {old} to {new}")
+                    shutil.copyfile(old, new)
+                else:
+                    logger.info(f"Renaming {old} to {new}")
+                    os.rename(old, new)
             else:
-                logger.info(f"Would rename/move {old} to {new}")
+                if doCopy:
+                    logger.info(f"Would copy {old} to {new}")
+                else:
+                    logger.info(f"Would rename {old} to {new}")
+
 
     def getTimes(self, filename):
     
@@ -152,7 +158,7 @@ class ImageRenamer:
             logger.info(f"Opening file {filename} failed")
             raise ValueError()
 
-        debugExif = 1
+        debugExif = 0
         if  debugExif == 1:
             for key, val in tags.items():
                 logger.debug(f"{key}: \t {repr(val)}")
@@ -190,34 +196,37 @@ class ImageRenamer:
 
         filenameWithoutPath = os.path.basename(filename)
 
-        datePattern = '^.*(\d{4})[-_]?(\d{2})[-_]?(\d{2}).*'
-        timePattern = '(\d{2})[-_: ]?(\d{2})[-_: ]?(\d{2})'
+        datePattern = '^.*[^\d](\d{4})[-_]?(\d{2})[-_]?(\d{2}).*'
+        timePattern = '(\d{2})[-_: ]?(\d{2})[-_: ]?(\d{2})[^\d]'
         datetimePattern = datePattern +'[-_ ]?' +timePattern
 
         # try full match at first
-        result = re.match(datetimePattern, filenameWithoutPath)
-        if result is not None:
-            time = timedelta(hours=int(result.group(4)), minutes=int(result.group(5)), seconds=int(result.group(6)))
+        reDateTime = re.match(datetimePattern, filenameWithoutPath)
+        if reDateTime is not None:
+            try:
+                datetime_obj = datetime(year=int(reDateTime.group(1)), month=int(reDateTime.group(2)), day=int(reDateTime.group(3)), hour=int(reDateTime.group(4)), minute=int(reDateTime.group(5)), second=int(reDateTime.group(6)))
+            except Exception as e:
+                logger.warning(f"Datetime creation (A) failed with {e}")
         else:
             # if not found everything, try day only
-            result = re.match(datePattern, filenameWithoutPath)
-            if result is not None:
-                time = timedelta()
+            reDate = re.match(datePattern, filenameWithoutPath)
+            if reDate is not None:
+                try:
+                    datetime_obj = datetime(year=int(reDate.group(1)), month=int(reDate.group(2)), day=int(reDate.group(3)))
+                except Exception as e:
+                    logger.warning(f"Datetime creation (A) failed with {e}")
             else:
                 logger.info(f"Date pattern not found in filename {filename}")
                 return None
 
-        datetime_obj = datetime(year=int(result.group(1)), month=int(result.group(2)), day=int(result.group(3)))
-        datetime_obj += time
-
-        logger.info(f"Filename time {datetime_obj} extracted from {filename}")
+        logger.info(f"Filename date/time {datetime_obj} extracted from {filename}")
         return datetime_obj
 
     def getFileCreated(self, filename):
         ## Get file creation date and time and return datetime object
         creationTimestamp = os.stat(filename).st_ctime
         datetime_obj = datetime.fromtimestamp(creationTimestamp)
-        logger.info(f"Filename creation time {datetime_obj} found from {filename}")
+        logger.info(f"File creation time {datetime_obj} found from {filename}")
         return datetime_obj
 
 
@@ -227,6 +236,8 @@ if __name__ == "__main__":
     
     inputFolder = f"{os.getcwd()}/examples"
     outputFolder = f"{os.getcwd()}/output"
+    dryRun = True
+    doCopy = True
         
     #logFormat = '%(asctime)s\t%(name)s\t%(funcName)s\t%(levelname)s:\t%(message)s'
-    x = ImageRenamer(inputFolder, outputFolder)
+    x = ImageRenamer(inputFolder, outputFolder, dryRun, doCopy)
