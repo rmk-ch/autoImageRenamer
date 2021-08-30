@@ -2,7 +2,8 @@
 import os
 import sys
 from loguru import logger
-from PIL import Image, ExifTags
+#from PIL import Image, ExifTags
+import exifread
 from datetime import datetime, timedelta
 import re
 
@@ -10,7 +11,7 @@ logger.info('Hello')
 
 class ImageRenamer:
     # Set list of valid file extensions
-    __EXTENSIONS = [".jpg", ".jpeg", ".png"]
+    __EXTENSIONS = [".jpg", ".jpeg", ".png", ".mov", ".arw"]
     __DATE_FORMAT = "%Y-%m-%d"
     __DATETIME_FORMAT = f"{__DATE_FORMAT}_%H-%M-%S"
 
@@ -34,7 +35,7 @@ class ImageRenamer:
 
             # If the file does not have a valid file extension
             # then skip it
-            if (fileExt not in self.__EXTENSIONS):
+            if (fileExt.lower() not in self.__EXTENSIONS):
                 continue
 
             # Create the old file path
@@ -76,16 +77,39 @@ class ImageRenamer:
         
     def fixCollisions(self, proposal):
         ## Find collisions new filename and append incrementing number
-        #allTargets = list(proposal.values())
+        
+        # create a dict that contains the number of entries
+        allNewList = list(proposal.values())
+        nEntriesTotalNew = dict.fromkeys(allNewList, 1)
+
         # find duplicates
-        logger.warning('Collision fixing not implemented. Returning with potential duplicates!')
-        return proposal #uniquified
+        seen = set()
+        duplicatesNew = set()
+        for new in proposal.values():
+            if new not in seen:
+                seen.add(new)
+            else:
+                duplicatesNew.add(new)
+                nEntriesTotalNew[new] = nEntriesTotalNew[new]+1
+
+
+        # find all entries that have been marked as duplicates and rename them by adding a counter
+        for old, new in proposal.items():
+            if new in duplicatesNew:
+                fileparts = os.path.splitext(new)
+                newFilename = fileparts[0] + "_" +str(nEntriesTotalNew[new]).zfill(3) +fileparts[1]
+                nEntriesTotalNew[new] = nEntriesTotalNew[new]-1
+                proposal[old] = newFilename
+                logger.info(f"Add duplicate-counter for old={old} to new={newFilename}")
+
+        
+        return proposal
 
 
     def doRename(self, finalFilenames):
         # Rename the file
         for old, new in finalFilenames.items():
-            if ~self.__isDryRun:
+            if not self.__isDryRun:
                 logger.info(f"Renaming/moving {old} to {new}")
                 #os.rename(old, new)
             else:
@@ -103,10 +127,11 @@ class ImageRenamer:
             times['filename'] = self.getFilenameTime(filename)
         except:
             pass
-        # try:
-        #     times['filenameWA'] = self.getFromFilenameWA(filename)
-        # except:
-        #     logging.warn('No filenameWA time found')
+
+        try:
+            times['creation'] = self.getFileCreated(filename)
+        except:
+            pass
 
         # Remove invalid entries
         times = { k:v for k, v in times.items() if v is not None }
@@ -119,32 +144,30 @@ class ImageRenamer:
         ## Extract EXIF image taken from filename and return datetime object
         # Open the image
         try:
-            image = Image.open(filename)
+            # Open image file for reading (binary mode)
+            with open(filename, 'rb') as f:
+                # Return Exif tags
+                tags = exifread.process_file(f, details=False)
         except:
-            logger.info(f"Opening file {filename} failed within Image")
+            logger.info(f"Opening file {filename} failed")
             raise ValueError()
-
-        # Get the date taken from EXIF metadata
-        exifDict = image.getexif()
-
-        # Close the image
-        image.close()
 
         debugExif = 1
         if  debugExif == 1:
-            for key, val in exifDict.items():
-                if key in ExifTags.TAGS:
-                    logger.debug(f"{key}: {ExifTags.TAGS[key]} \t {repr(val)}")
-                else:
-                    logger.debug(f"{key}: n/a \t {repr(val)}")
+            for key, val in tags.items():
+                logger.debug(f"{key}: \t {repr(val)}")
 
         try:
-            datetime_str = exifDict[306]
+            exifTag = tags['EXIF DateTimeOriginal']
+            #exifTag = tags['EXIF DateTimeDigitized']
+            #exifTag = tags['Image DateTime']
         except:
             logger.info(f"EXIF data entry invalid for {filename}")
             return None
 
         try:
+            # extract relevant part
+            datetime_str = exifTag.values
             datetime_obj = datetime.strptime(datetime_str, "%Y:%m:%d %H:%M:%S")
         except:
             logger.error(f"EXIF entry string {datetime_str} not parsable in {filename}")
@@ -160,21 +183,33 @@ class ImageRenamer:
         filenameWithoutPath = os.path.basename(filename)
 
         datePattern = '^.*(\d{4})[-_]?(\d{2})[-_]?(\d{2}).*'
-        result = re.match(datePattern, filenameWithoutPath)
-        if result is None:
-            logger.info(f"Date pattern not found in filename {filename}")
-            return None
-        
-        datetime_obj = datetime(year=int(result.group(1)), month=int(result.group(2)), day=int(result.group(3)))
-
         timePattern = '(\d{2})[-_: ]?(\d{2})[-_: ]?(\d{2})'
         datetimePattern = datePattern +'[-_ ]?' +timePattern
+
+        # try full match at first
         result = re.match(datetimePattern, filenameWithoutPath)
         if result is not None:
-            datetime_obj += timedelta(hours=int(result.group(4)), minutes=int(result.group(5)), seconds=int(result.group(6)))
+            time = timedelta(hours=int(result.group(4)), minutes=int(result.group(5)), seconds=int(result.group(6)))
+        else:
+            # if not found everything, try day only
+            result = re.match(datePattern, filenameWithoutPath)
+            if result is not None:
+                time = timedelta()
+            else:
+                logger.info(f"Date pattern not found in filename {filename}")
+                return None
+
+        datetime_obj = datetime(year=int(result.group(1)), month=int(result.group(2)), day=int(result.group(3)))
+        datetime_obj += time
 
         logger.info(f"Filename time {datetime_obj} extracted from {filename}")
+        return datetime_obj
 
+    def getFileCreated(self, filename):
+        ## Get file creation date and time and return datetime object
+        creationTimestamp = os.stat(filename).st_ctime
+        datetime_obj = datetime.fromtimestamp(creationTimestamp)
+        logger.info(f"Filename creation time {datetime_obj} found from {filename}")
         return datetime_obj
 
 
