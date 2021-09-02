@@ -1,5 +1,6 @@
 
 import os
+import shutil
 import sys
 from loguru import logger
 #from PIL import Image, ExifTags
@@ -11,14 +12,14 @@ logger.info('Hello')
 
 class ImageRenamer:
     # Set list of valid file extensions
-    __EXTENSIONS = [".jpg", ".jpeg", ".png", ".mov", ".arw"]
+    __EXTENSIONS = [".jpg", ".jpeg", ".png", ".mov", ".mp4", ".arw"]
     __DATE_FORMAT = "%Y-%m-%d"
     __DATETIME_FORMAT = f"{__DATE_FORMAT}_%H-%M-%S"
 
     def __init__(self, inputFolder, outputFolder, dryRun, doCopy):
         self.__inputFolder = inputFolder
         self.__outputFolder = outputFolder
-        self.__isDryRun = True
+        self.__isDryRun = dryRun
 
         logger.info(f"Renaming images from {inputFolder} to {outputFolder}")
 
@@ -196,7 +197,7 @@ class ImageRenamer:
 
         filenameWithoutPath = os.path.basename(filename)
 
-        datePattern = '^.*[^\d](\d{4})[-_]?(\d{2})[-_]?(\d{2}).*'
+        datePattern = '^.*?[^\d](\d{4})[-_]?(\d{2})[-_]?(\d{2}).*?'
         timePattern = '(\d{2})[-_: ]?(\d{2})[-_: ]?(\d{2})[^\d]'
         datetimePattern = datePattern +'[-_ ]?' +timePattern
 
