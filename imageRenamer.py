@@ -1,14 +1,30 @@
+"""AutoImageRenamer:
+Automatic image and video renaming targeting a filename with the date and time of the image taken.
+The strategy is first to figure out the date and time from filename, exif data and file creation date and 
+subsequently selecting the oldest of these datetimes. The file mode is then either to rename or copy the file
+from A to B.
+
+Usage:
+    imageRenamer.py rename [<source>] [<target>] [-i]
+    imageRenamer.py copy [<source>] [<target>] [-i]
+    imageRenamer.py test [<source>] [<target>] [-i]
+
+Options:
+    <source>            Source directory [default: .]
+    <target>            Target directory [default: <source>]
+    -i --interactive    Ask for confirmation before action
+"""
 
 import os
 import shutil
 import sys
+from enum import Enum
+from datetime import datetime
 from loguru import logger
 #from PIL import Image, ExifTags
 import exifread
-from datetime import datetime, timedelta
 import re
 
-logger.info('Hello')
 
 class ImageRenamer:
     # Set list of valid file extensions
@@ -16,12 +32,19 @@ class ImageRenamer:
     __DATE_FORMAT = "%Y-%m-%d"
     __DATETIME_FORMAT = f"{__DATE_FORMAT}_%H-%M-%S"
 
-    def __init__(self, inputFolder, outputFolder, dryRun, doCopy):
+    class Action(Enum):
+        copy = 1
+        rename = 2
+        testrun = 3
+
+
+    def __init__(self, inputFolder, outputFolder, action, interactive):
         self.__inputFolder = inputFolder
         self.__outputFolder = outputFolder
-        self.__isDryRun = dryRun
+        self.__action = action
+        self.__interactive = interactive
 
-        logger.info(f"Renaming images from {inputFolder} to {outputFolder}")
+        logger.info(f"Doing {action.name} from {inputFolder} to {outputFolder}")
 
         # Get all files from folder
         fileNames = os.listdir(self.__inputFolder)
@@ -62,8 +85,18 @@ class ImageRenamer:
         # Find collisions in proposal
         finalRenames = self.fixCollisions(proposedRenames)
 
+        # Print interactively
+        if self.__interactive:
+            self.takeAction(finalRenames, self.Action.testrun)
+            print("Do you want to continue? [Y/n]: ")
+            userinp = sys.stdin.read()
+            if userinp != "y" and userinp != "Y":
+                return
+
+        print("Continuing!")
+
         # Actual Renames
-        self.doRename(finalRenames, doCopy)
+        self.takeAction(finalRenames, self.__action)
 
     def findOldestTime(self, times):
         if len(times) < 1:
@@ -105,21 +138,25 @@ class ImageRenamer:
         return proposal
 
 
-    def doRename(self, finalFilenames, doCopy):
-        # Rename the file
+    def takeAction(self, finalFilenames, action):
+        # Setup action
+        if action == self.Action.rename:
+            def act(old, new):
+                logger.info(f"Renaming {old} to {new}")
+                os.rename(old, new)
+        elif action == self.Action.copy:
+            def act(old, new):
+                logger.info(f"Copying {old} to {new}")
+                os.rename(old, new)
+        else:
+            def act(old, new):
+                oldBasename = os.path.basename(old)
+                newBasename = os.path.splitext(new)
+                print(f"Proposing {oldBasename} to {newBasename}")
+        
+        # Act!
         for old, new in finalFilenames.items():
-            if not self.__isDryRun:
-                if doCopy:
-                    logger.info(f"Copying {old} to {new}")
-                    shutil.copyfile(old, new)
-                else:
-                    logger.info(f"Renaming {old} to {new}")
-                    os.rename(old, new)
-            else:
-                if doCopy:
-                    logger.info(f"Would copy {old} to {new}")
-                else:
-                    logger.info(f"Would rename {old} to {new}")
+            act(old, new)
 
 
     def getTimes(self, filename):
@@ -231,14 +268,24 @@ class ImageRenamer:
         return datetime_obj
 
 
-if __name__ == "__main__":
-    # If folder path argument exists then use it
-    # Else use the current running folder
+from docopt import docopt
+
+
+if __name__ == '__main__':
+    arguments = docopt(__doc__, version='1.0.0')
+
+    if arguments['<source>'] is None:
+        arguments['<source>'] = os.getcwd()
+
+    if arguments['<target>'] is None:
+        arguments['<target>'] = arguments['<source>']
+
+    if arguments['copy']:
+        action = ImageRenamer.Action.copy
+    elif arguments['rename']:
+        action = ImageRenamer.Action.rename
+    elif arguments['test']:
+        action = ImageRenamer.Action.testrun
     
-    inputFolder = f"{os.getcwd()}/examples"
-    outputFolder = f"{os.getcwd()}/output"
-    dryRun = True
-    doCopy = True
-        
-    #logFormat = '%(asctime)s\t%(name)s\t%(funcName)s\t%(levelname)s:\t%(message)s'
-    x = ImageRenamer(inputFolder, outputFolder, dryRun, doCopy)
+    
+    x = ImageRenamer( arguments['<source>'], arguments['<target>'], action, arguments['--interactive'])
