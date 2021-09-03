@@ -88,12 +88,14 @@ class ImageRenamer:
         # Print interactively
         if self.__interactive:
             self.takeAction(finalRenames, self.Action.testrun)
-            print("Do you want to continue? [Y/n]: ")
-            userinp = sys.stdin.read()
-            if userinp != "y" and userinp != "Y":
+            if self.__action == self.Action.testrun:
+                print("Finished. Rerun with actual command instead of testrun")
                 return
-
-        print("Continuing!")
+            userinp = input("Do you want to continue? [Y/n]: ")
+            if userinp != "y" and userinp != "Y":
+                print("Finished")
+                return
+            print("Continuing!")
 
         # Actual Renames
         self.takeAction(finalRenames, self.__action)
@@ -151,7 +153,7 @@ class ImageRenamer:
         else:
             def act(old, new):
                 oldBasename = os.path.basename(old)
-                newBasename = os.path.splitext(new)
+                newBasename = os.path.basename(new)
                 print(f"Proposing {oldBasename} to {newBasename}")
         
         # Act!
