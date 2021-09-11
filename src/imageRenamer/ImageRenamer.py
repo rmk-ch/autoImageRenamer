@@ -5,14 +5,15 @@ subsequently selecting the oldest of these datetimes. The file mode is then eith
 from A to B.
 
 Usage:
-    imageRenamer.py rename [<source>] [<target>] [-i]
-    imageRenamer.py copy [<source>] [<target>] [-i]
-    imageRenamer.py test [<source>] [<target>] [-i]
+    imageRenamer.py rename [<source>] [<target>] [-i] [-l [<logfile>]]
+    imageRenamer.py copy [<source>] [<target>] [-i] [-l [<logfile>]]
+    imageRenamer.py test [<source>] [<target>] [-i] [-l [<logfile>]]
 
 Options:
     <source>            Source directory [default: .]
     <target>            Target directory [default: <source>]
     -i --interactive    Ask for confirmation before action
+    -l --logfile        Target logfile [default: ./imageRenamer.log]
 """
 
 import os
@@ -48,6 +49,7 @@ class ImageRenamer:
 
         # Get all files from folder
         fileNames = os.listdir(self.__inputFolder)
+        fileNames.sort()
 
         proposedRenames = dict()
 
@@ -63,7 +65,7 @@ class ImageRenamer:
                 continue
 
             # Create the old file path
-            oldFilePath = os.path.join(self.__inputFolder, fileName)
+            oldFilePath = os.path.normpath(os.path.join(self.__inputFolder, fileName))
 
             # try various options
             times = self.getTimes(oldFilePath)
@@ -83,22 +85,22 @@ class ImageRenamer:
             proposedRenames[oldFilePath] =  os.path.join(outputFolder, newFilename)
 
         # Find collisions in proposal
-        finalRenames = self.fixCollisions(proposedRenames)
+        self.__finalRenames = self.fixCollisions(proposedRenames)
 
         # Print interactively
         if self.__interactive:
-            self.takeAction(finalRenames, self.Action.testrun)
+            self.takeAction(self.__finalRenames, self.Action.testrun)
             if self.__action == self.Action.testrun:
-                print("Finished. Rerun with actual command instead of testrun")
+                logger.info("Finished. If you're happy, rerun it with actual rename/copy command")
                 return
             userinp = input("Do you want to continue? [Y/n]: ")
             if userinp != "y" and userinp != "Y":
-                print("Finished")
+                logger.info("Finished")
                 return
-            print("Continuing!")
+            logger.info("Pressed yes to continue...")
 
         # Actual Renames
-        self.takeAction(finalRenames, self.__action)
+        self.takeAction(self.__finalRenames, self.__action)
 
     def findOldestTime(self, times):
         if len(times) < 1:
@@ -135,7 +137,7 @@ class ImageRenamer:
                 newFilename = fileparts[0] + "_" +str(nEntriesTotalNew[new]).zfill(3) +fileparts[1]
                 nEntriesTotalNew[new] = nEntriesTotalNew[new]-1
                 proposal[old] = newFilename
-                logger.info(f"Add duplicate-counter for old={old} to new={newFilename}")
+                logger.debug(f"Add duplicate-counter for old={old} to new={newFilename}")
 
         return proposal
 
@@ -149,12 +151,12 @@ class ImageRenamer:
         elif action == self.Action.copy:
             def act(old, new):
                 logger.info(f"Copying {old} to {new}")
-                os.rename(old, new)
+                shutil.copyfile(old, new)
         else:
             def act(old, new):
                 oldBasename = os.path.basename(old)
                 newBasename = os.path.basename(new)
-                print(f"Proposing {oldBasename} to {newBasename}")
+                logger.info(f"Proposing {oldBasename} to {newBasename}")
         
         # Act!
         for old, new in finalFilenames.items():
@@ -195,7 +197,7 @@ class ImageRenamer:
                 # Return Exif tags
                 tags = exifread.process_file(f, details=False)
         except:
-            logger.info(f"Opening file {filename} failed")
+            logger.debug(f"Opening file {filename} failed")
             raise ValueError()
 
         debugExif = 0
@@ -210,7 +212,7 @@ class ImageRenamer:
             try:
                 tagValue = tags[tagId]
             except:
-                logger.info(f"EXIF tag ID {tagId} invalid for {filename}")
+                logger.debug(f"EXIF tag ID {tagId} invalid for {filename}")
                 datetime_objs[tagId] = None
                 continue
 
@@ -223,11 +225,11 @@ class ImageRenamer:
                 datetime_objs[tagId] = None
                 continue
 
-            logger.info(f"EXIF tag {tagId} parsed to {datetime_objs} from {filename}")
+            logger.debug(f"EXIF tag {tagId} parsed to {datetime_objs} from {filename}")
 
         # find oldest
         datetime_obj = self.findOldestTime(datetime_objs)
-        logger.info(f"Extracted {datetime_obj} via EXIF from {filename}")
+        logger.debug(f"Extracted {datetime_obj} via EXIF from {filename}")
 
         return datetime_obj
 
@@ -256,23 +258,24 @@ class ImageRenamer:
                 except Exception as e:
                     logger.warning(f"Datetime creation (A) failed with {e}")
             else:
-                logger.info(f"Date pattern not found in filename {filename}")
+                logger.debug(f"Date pattern not found in filename {filename}")
                 return None
 
-        logger.info(f"Filename date/time {datetime_obj} extracted from {filename}")
+        logger.debug(f"Filename date/time {datetime_obj} extracted from {filename}")
         return datetime_obj
 
     def getFileCreated(self, filename):
         ## Get file creation date and time and return datetime object
         creationTimestamp = os.stat(filename).st_ctime
         datetime_obj = datetime.fromtimestamp(creationTimestamp)
-        logger.info(f"File creation time {datetime_obj} found from {filename}")
+        logger.debug(f"File creation time {datetime_obj} found from {filename}")
         return datetime_obj
+
+    def getFinalRenames(self):
+        return self.__finalRenames
 
 
 from docopt import docopt
-
-
 if __name__ == '__main__':
     arguments = docopt(__doc__, version='1.0.0')
 
@@ -289,5 +292,14 @@ if __name__ == '__main__':
     elif arguments['test']:
         action = ImageRenamer.Action.testrun
     
+    logger.remove(None)
+    logger.add(sys.stdout, level="INFO")
+    if arguments['--logfile']:
+        if arguments['<logfile>'] is None:
+            logfile = "imageRenamer.log"
+        else:
+            logfile = arguments['<logfile>']
+        logger.add(logfile, level="INFO")
+
     
     x = ImageRenamer( arguments['<source>'], arguments['<target>'], action, arguments['--interactive'])
