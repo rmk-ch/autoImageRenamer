@@ -1,3 +1,5 @@
+raise NotImplementedError
+
 # pylint: disable=line-too-long
 
 """AutoImageRenamer"""
