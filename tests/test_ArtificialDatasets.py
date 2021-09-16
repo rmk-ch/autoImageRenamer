@@ -66,7 +66,7 @@ class Test_ArtificialDatasets(unittest.TestCase):
         for sourceFile, targetFile in expected.items():
             self.assertEqual(actual[sourceFile], targetFile)
 
-
+    @unittest.skip("to be implemented")
     def test_fromExif(self):
         # create some files
         mapping = dict()

@@ -7,7 +7,7 @@ from autoImageRenamer import autoImageRenamer
 
 
 class Test_PrivateDataset(unittest.TestCase):
-
+    @unittest.skip("Private dataset is not available in the repository")
     def test_predefinedDataset(self):
         # settings
         action = autoImageRenamer.AutoImageRenamer.Action.dryrun
