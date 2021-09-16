@@ -240,7 +240,7 @@ class AutoImageRenamer:
 
         filenameWithoutPath = os.path.basename(filename)
 
-        datePattern = '^.*?(\d{4})[-_]?(\d{2})[-_]?(\d{2}).*?'
+        datePattern = '^.*?(\d{4})[-_ ]?(\d{2})[-_ ]?(\d{2}).*?'
         timePattern = '(\d{2})[-_: ]?(\d{2})[-_: ]?(\d{2})'
         datetimePattern = datePattern +'[-_ ]?' +timePattern
 

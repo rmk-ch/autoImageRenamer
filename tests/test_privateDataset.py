@@ -6,13 +6,13 @@ sys.path.append(os.path.abspath('../src/autoImageRenamer'))
 from autoImageRenamer import autoImageRenamer
 
 
-class Testing(unittest.TestCase):
+class Test_PrivateDataset(unittest.TestCase):
 
     def test_predefinedDataset(self):
         # settings
         action = autoImageRenamer.AutoImageRenamer.Action.dryrun
-        source = os.path.join(os.getcwd(), "tests", "testdata")
-        target = os.path.join(os.getcwd(), "tests", "testdataout")
+        source = os.path.join(os.getcwd(), "tests", "privateDataset")
+        target = os.path.join(os.getcwd(), "tests", "tempOut")
         interactive = False
 
 
@@ -45,25 +45,6 @@ class Testing(unittest.TestCase):
         for sourceFile, targetFile in expected.items():
             self.assertEqual(actual[sourceFile], targetFile)
 
-
-
-    def test_emptyFolder_noException(self):
-        source = os.path.join(os.getcwd(), "tests", "emptydirectory")
-        target = source
-        action = autoImageRenamer.AutoImageRenamer.Action.dryrun
-        interactive = False
-
-        # setup test directory
-        try:
-            os.rmdir(source)
-        except:
-            pass
-
-        os.mkdir(source)
-
-        ir = autoImageRenamer.AutoImageRenamer( source, target, action, interactive)
-
-        os.rmdir(source)
 
 if __name__ == '__main__':
     unittest.main()
