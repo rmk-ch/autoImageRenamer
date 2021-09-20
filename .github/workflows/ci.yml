@@ -20,4 +20,5 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
       - name: Run tests with pytest
-        run: python -m unittest discover
+          run python .\tests\test_ArtificialDatasets.py
+        #run: python -m unittest -v -s "./tests" -p "test_*.py"

@@ -4,7 +4,7 @@ import os
 from pathlib import Path
 import shutil
 
-sys.path.append(os.path.abspath('./src/autoImageRenamer'))
+#sys.path.append(os.path.abspath('./src/autoImageRenamer'))
 from autoImageRenamer import autoImageRenamer
 
 
