@@ -2,7 +2,7 @@ import unittest
 import sys
 import os
 
-sys.path.append(os.path.abspath('./src/autoImageRenamer'))
+sys.path.append(os.path.abspath('./src'))
 from autoImageRenamer import autoImageRenamer
 
 
