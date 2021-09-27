@@ -3,6 +3,7 @@ import sys
 import os
 from pathlib import Path
 import shutil
+sys.path.append(os.path.abspath('./tests'))
 import TestHelpers
 
 sys.path.append(os.path.abspath('./src'))
