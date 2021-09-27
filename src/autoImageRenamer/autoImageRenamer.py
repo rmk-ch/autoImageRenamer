@@ -180,10 +180,11 @@ class AutoImageRenamer:
         except:
             pass
 
-        try:
-            times['creation'] = self.getFileCreated(filename)
-        except:
-            pass
+        # we could also take into account file creation date on filesystem. this seems very inaccurate though and we prefer no rename at all
+        #try:
+        #    times['creation'] = self.getFileCreated(filename)
+        #except:
+        #    pass
 
         # Remove invalid entries
         times = { k:v for k, v in times.items() if v is not None }
