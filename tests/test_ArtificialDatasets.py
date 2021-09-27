@@ -3,9 +3,11 @@ import sys
 import os
 from pathlib import Path
 import shutil
+import TestHelpers
 
 sys.path.append(os.path.abspath('./src'))
 from autoImageRenamer import autoImageRenamer
+
 
 
 class Test_ArtificialDatasets(unittest.TestCase):
@@ -16,6 +18,9 @@ class Test_ArtificialDatasets(unittest.TestCase):
         self.__target = self.__source
         self.__action = autoImageRenamer.AutoImageRenamer.Action.dryrun
         self.__interactive = False
+        
+        self.__DATE_FORMAT = "%Y-%m-%d"
+        self.__DATETIME_FORMAT = f"{self.__DATE_FORMAT}_%H-%M-%S"
 
         # setup test directory
         try:
@@ -38,8 +43,10 @@ class Test_ArtificialDatasets(unittest.TestCase):
         mapping = dict()
         mapping["20000930-153429-98.jpg"] = "2000-09-30_15-34-29.jpg"
         mapping["2000 09 30 15 34 55.jpg"] = "2000-09-30_15-34-55.jpg"
-        mapping["2000-09-30_15-34-52-11.JPG"] = "2000-09-30_15-34-52.jpg"
+        mapping["1940 01 02 01 02 03.jpg"] = "1940-01-02_01-02-03.jpg"
+        mapping["Photo-2021-06-21-10-17-40_8255.JPG"] = "2021-06-21_10-17-40.jpg" # iPhone
         mapping["2000-09-30.arw"] = "2000-09-30.arw"
+        mapping["Video-2021-06-22-10-12-58_8280.MOV"] = "2021-06-22_10-12-58.mov" # iPhone Video
 
 
         for old in mapping.keys():
@@ -66,16 +73,20 @@ class Test_ArtificialDatasets(unittest.TestCase):
         for sourceFile, targetFile in expected.items():
             self.assertEqual(actual[sourceFile], targetFile)
 
-    @unittest.skip("to be implemented")
     def test_fromExif(self):
-        # create some files
+        # create datetime objects and files randomly
+        nFiles = 50
+        tagIds = ['datetime_original', 'datetime_digitized', 'datetime']
+        dtime = dict()
         mapping = dict()
-        mapping["somefile.jpg"] = "2002-01-10_00-01-02.jpg"
 
-
-        for old in mapping.keys():
-            # create empty files
-            Path(os.path.join(self.__source, old)).touch()
+        for f in range(0, nFiles):
+            filename = f"f{f}.jpg"
+            dtime = TestHelpers.getRandomDatetime(1900)
+            mapping[filename] = dtime.strftime(self.__DATETIME_FORMAT) +".jpg"
+            tagDict = dict()
+            tagDict[tagIds[f % len(tagIds)]] = dtime
+            TestHelpers.FileCreator(os.path.join(self.__source, filename), tagDict)
 
 
         # run DUT
