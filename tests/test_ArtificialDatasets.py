@@ -15,8 +15,8 @@ class Test_ArtificialDatasets(unittest.TestCase):
 
     def setUp(self):
         # settings
-        self.__source = os.path.join(os.getcwd(), "tests", "artificialDataset")
-        self.__target = self.__source
+        self.__source = os.path.join(os.getcwd(), "tests", "tempIn")
+        self.__target = os.path.join(os.getcwd(), "tests", "tempOut")
         self.__action = autoImageRenamer.AutoImageRenamer.Action.dryrun
         self.__interactive = False
         
@@ -41,7 +41,7 @@ class Test_ArtificialDatasets(unittest.TestCase):
 
     def test_fromFilenameOnly(self):
         # create some files
-        mapping = dict()
+        mapping = dict() #@TODO: Make this random similar to exif testcase
         mapping["20000930-153429-98.jpg"] = "2000-09-30_15-34-29.jpg"
         mapping["2000 09 30 15 34 55.jpg"] = "2000-09-30_15-34-55.jpg"
         mapping["1940 01 02 01 02 03.jpg"] = "1940-01-02_01-02-03.jpg"
@@ -110,6 +110,83 @@ class Test_ArtificialDatasets(unittest.TestCase):
             self.assertEqual(actual[sourceFile], targetFile)
 
 
+    def test_exitAndFilename_exifIsOldest(self):
+        dtime = dict()
+        dtime[0] = TestHelpers.getRandomDatetime(1900)
+        dtime[1] = TestHelpers.getRandomDatetime(1900)
+        if dtime[0] > dtime[1]:
+            dtime_older = dtime[1]
+            dtime_newer = dtime[0]
+        else:
+            dtime_older = dtime[0]
+            dtime_newer = dtime[1]
+
+        mapping = dict()
+        mapping[f"{dtime_newer.strftime(self.__DATETIME_FORMAT)}.jpg"] = f"{dtime_older.strftime(self.__DATETIME_FORMAT)}.jpg"
+        
+        for old in mapping.keys():
+            tagDict = dict()
+            tagDict['datetime_original'] = dtime_older
+            TestHelpers.FileCreator(os.path.join(self.__source, old), tagDict)
+
+
+        # run DUT
+        ir = autoImageRenamer.AutoImageRenamer( self.__source, self.__target, self.__action, self.__interactive)
+        actual = ir.getFinalRenames()
+
+
+        sourcePath_norm = os.path.normpath(self.__source)
+        targetPath_norm = os.path.normpath(self.__target)
+
+        expected = dict()
+        for sourceFile, targetFile in mapping.items():
+            key = os.path.join(sourcePath_norm, sourceFile)
+            value = os.path.join(targetPath_norm, targetFile)
+            expected[key] = value
+
+        # Compare
+        self.assertEqual(actual.keys(), expected.keys())
+        for sourceFile, targetFile in expected.items():
+            self.assertEqual(actual[sourceFile], targetFile)
+
+    def test_exitAndFilename_filenameIsOldest(self):
+        dtime = dict()
+        dtime[0] = TestHelpers.getRandomDatetime(1900)
+        dtime[1] = TestHelpers.getRandomDatetime(1900)
+        if dtime[0] > dtime[1]:
+            dtime_older = dtime[1]
+            dtime_newer = dtime[0]
+        else:
+            dtime_older = dtime[0]
+            dtime_newer = dtime[1]
+
+        mapping = dict()
+        mapping[f"{dtime_older.strftime(self.__DATETIME_FORMAT)}.jpg"] = f"{dtime_older.strftime(self.__DATETIME_FORMAT)}.jpg"
+        
+        for old in mapping.keys():
+            tagDict = dict()
+            tagDict['datetime_original'] = dtime_newer
+            TestHelpers.FileCreator(os.path.join(self.__source, old), tagDict)
+
+
+        # run DUT
+        ir = autoImageRenamer.AutoImageRenamer( self.__source, self.__target, self.__action, self.__interactive)
+        actual = ir.getFinalRenames()
+
+
+        sourcePath_norm = os.path.normpath(self.__source)
+        targetPath_norm = os.path.normpath(self.__target)
+
+        expected = dict()
+        for sourceFile, targetFile in mapping.items():
+            key = os.path.join(sourcePath_norm, sourceFile)
+            value = os.path.join(targetPath_norm, targetFile)
+            expected[key] = value
+
+        # Compare
+        self.assertEqual(actual.keys(), expected.keys())
+        for sourceFile, targetFile in expected.items():
+            self.assertEqual(actual[sourceFile], targetFile)
 
 
     def test_emptyFolder_noException(self):
