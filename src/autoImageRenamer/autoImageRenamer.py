@@ -279,8 +279,15 @@ class AutoImageRenamer:
         return self.__finalRenames
 
 
+def run():
+    """Calls :func:`main` passing the CLI arguments extracted from :obj:`sys.argv`
+
+    This function can be used as entry point to create console scripts with setuptools.
+    """
+    main(sys.argv[1:])
+    
 from docopt import docopt
-if __name__ == '__main__':
+def main(args):
     arguments = docopt(__doc__, version='1.0.0')
 
     if arguments['<source>'] is None:
@@ -307,3 +314,16 @@ if __name__ == '__main__':
 
     
     x = AutoImageRenamer( arguments['<source>'], arguments['<target>'], action, arguments['--interactive'])
+
+if __name__ == "__main__":
+    # ^  This is a guard statement that will prevent the following code from
+    #    being executed in the case someone imports this file instead of
+    #    executing it as a script.
+    #    https://docs.python.org/3/library/__main__.html
+
+    # After installing your project with pip, users can also run your Python
+    # modules as scripts via the ``-m`` flag, as defined in PEP 338::
+    #
+    #     python -m pyscaffold_test.skeleton 42
+    #
+    run()
