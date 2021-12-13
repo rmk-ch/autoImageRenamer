@@ -11,14 +11,17 @@ An interactive mode allows checking the proposed changes before any actions are 
 
 Continuous Integration
 ----------------------
-[![Run Python Tests](https://github.com/rmk-ch/autoImageRenamer/actions/workflows/ci.yml/badge.svg)](https://github.com/rmk-ch/autoImageRenamer/actions/workflows/ci.yml)
+.. image :: https://github.com/rmk-ch/autoImageRenamer/actions/workflows/ci.yml/badge.svg
+    :target:https://github.com/rmk-ch/autoImageRenamer/actions/workflows/ci.yml
+    :alt:Run Python Tests
 
 
 Usage
 -----
 Requires Python installation, version 3.9 is tested. Python must be in $PATH.
 Install from PowerShell terminal
-.. code-block:: shell
+.. code-block:: console
+
     $ git clone https://github.com/rmk-ch/autoImageRenamer.git
     $ cd autoImageRenamer.git
     $ python -m venv venv
