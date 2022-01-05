@@ -6,7 +6,7 @@ authors = ["Roman Koller <github@roman-koller.ch>"]
 license = "MIT"
 readme = "README.md"
 packages = [
-    { include = "autoImageRenamer", from "src"},
+    { include = "autoImageRenamer", from "src"}
 ]
 
 [tool.poetry.dependencies]
