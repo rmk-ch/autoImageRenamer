@@ -78,7 +78,7 @@ dev = ["pytest (>=4.6.2)", "black (>=19.3b0)"]
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.9"
-content-hash = "f93f961ce2833e298a29994bfb100885954a9bd346e8406bb8484d03c14e0606"
+content-hash = "8f51bc54a695f9cc91e7d3853a7fa04554397386d1a2049a6d364cc521028bf5"
 
 [metadata.files]
 colorama = [
