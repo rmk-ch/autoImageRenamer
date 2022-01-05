@@ -9,21 +9,26 @@ An interactive mode allows checking the proposed changes before any actions are 
 [![Run Python Tests](https://github.com/rmk-ch/autoImageRenamer/actions/workflows/ci.yml/badge.svg)](https://github.com/rmk-ch/autoImageRenamer/actions/workflows/ci.yml)
 
 
-## Usage
+## Installation
 Requires Python installation, version 3.9 is tested. Python must be in $PATH.
-Install from PowerShell terminal
+Installation with PowerShell (clones git repository, goes to repository, installs poetry, installs autoImageRenamer):
 ```
 $ git clone https://github.com/rmk-ch/autoImageRenamer.git
-$ cd autoImageRenamer.git
-$ python -m venv venv
-$ .\venv\Scripts\Activate.ps1
-$ pip install -r requirements.txt
+$ Set-Location autoImageRenamer.git
+$ (Invoke-WebRequest -Uri https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py -UseBasicParsing).Content | python -
+$ poetry install
 ```
-See autoImageRenamer.ps1, call with --help for detailed usage.
+
+Set environment variable AUTO_IMAGE_RENAMER_PATH to the path where the repository is checked out.
+Copy autoImageRenamer.ps1 to where you need it and adapt any calls as you like.
+
+## Usage
+In PowerShell:
+```
+$ Set-Location $env:AUTO_IMAGE_RENAMER_PATH
+$ poetry run autoImageRenamer --help
+```
 
 ## Author
 Roman Koller, https://roman-koller.ch
-
-## Notes
-According to https://blog.ionelmc.ro/2014/05/25/python-packaging/
 
