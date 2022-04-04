@@ -76,10 +76,11 @@ class AutoImageRenamer:
                 logger.info("Finished. If you're happy, rerun it with actual rename/copy command")
                 return
             userinp = input("Do you want to continue? [Y/n]: ")
-            if userinp != "y" and userinp != "Y":
-                logger.info("Finished")
+            logger.debug(f"Entered '{userinp}'")
+            if userinp != "y" and userinp != "Y" and len(userinp) > 0:
+                logger.info(f"Finished")
                 return
-            logger.info("Pressed yes to continue...")
+            logger.info("Continuing...")
 
         # Actual Renames
         self.takeAction(self.__finalRenames, self.__action)
