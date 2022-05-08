@@ -58,7 +58,7 @@ python-versions = ">=3.6"
 
 [[package]]
 name = "plum-py"
-version = "0.7.2"
+version = "0.7.9"
 description = "Pack/Unpack Memory."
 category = "main"
 optional = false
@@ -78,7 +78,7 @@ dev = ["pytest (>=4.6.2)", "black (>=19.3b0)"]
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.9"
-content-hash = "6093e62531a1ba119fddb526632781514f44b262bdd897271b63450ee0b9e60d"
+content-hash = "dd3f03c9c902ba605a04ae35448615b29d04a168671eff473f1f343666966244"
 
 [metadata.files]
 colorama = [
@@ -142,8 +142,8 @@ pillow = [
     {file = "Pillow-8.3.1.tar.gz", hash = "sha256:2cac53839bfc5cece8fdbe7f084d5e3ee61e1303cccc86511d351adcb9e2c792"},
 ]
 plum-py = [
-    {file = "plum-py-0.7.2.tar.gz", hash = "sha256:5cbdcde107d2d6f209e10ba9af01240b554efa6af75f47103e78d5d2c9d181e0"},
-    {file = "plum_py-0.7.2-py3-none-any.whl", hash = "sha256:dda56ed76b689fc726b84e63ecc191cbb3b39e8d2fe42666a488080e874551f7"},
+    {file = "plum-py-0.7.9.tar.gz", hash = "sha256:4499f4fd3148aff52c9519f5a33f979b95fefe0ee3b2c275b13716944e45a802"},
+    {file = "plum_py-0.7.9-py3-none-any.whl", hash = "sha256:645df6ed1216bcc7057da6581e3d342b1e58999b1e4d2a1446ee4b00d8197df7"},
 ]
 win32-setctime = [
     {file = "win32_setctime-1.1.0-py3-none-any.whl", hash = "sha256:231db239e959c2fe7eb1d7dc129f11172354f98361c4fa2d6d2d7e278baa8aad"},
