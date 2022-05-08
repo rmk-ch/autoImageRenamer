@@ -6,9 +6,10 @@ import random
 
 
 class FileCreator:
-    def __init__(self, filename : str, tagDict : dict) -> None:
+    def __init__(self, filename : str, tagDict : dict, color : tuple = (209, 123, 193)) -> None:
         self.__filename = filename
         self.__tagDict = tagDict
+        self.__color = color
         self.createEmptyImage(filename)
         self.addExif(filename, tagDict)
 
@@ -17,7 +18,7 @@ class FileCreator:
         width = 10
         height = 10
 
-        img  = Image.new( mode = "RGB", size = (width, height), color = (209, 123, 193) )
+        img  = Image.new( mode = "RGB", size = (width, height), color = self.__color )
         #img.show()
         img.save(filename)
 
