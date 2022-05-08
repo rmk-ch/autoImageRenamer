@@ -3,11 +3,11 @@
 Have you ever moved images from multiple sources (devices, people, ...) into the same folder? Usually, this is a terrible mess in terms of filenames. If you open one file in most image viewers, navigating through the images drives me crazy.
 
 The AutoImageRenamer solves this issue by reading all image and video file and tries to automatically extract the date and time where it has been taken. It parses the filename for date and time patterns as well as reading embedded EXIF metadata. As a last resort it could also take the filesystems creation date. It then takes the _oldest_ datetime found and renames the files in a computer-sortable manner, i.e. YYYY-MM-DD_HH-mm-ss and unifies extensions to lowercase. If files have the same detected time, it adds a number to each filename. Additionally, if not only the time is the same but also the content, it marks all duplicates with a DUPLICATE prefix.
- 
+
 An interactive mode allows checking the proposed changes before any actions are taken.
 
 ## Continuous Integration
-[![Run Python Tests](https://github.com/rmk-ch/autoImageRenamer/actions/workflows/ci.yml/badge.svg)](https://github.com/rmk-ch/autoImageRenamer/actions/workflows/ci.yml)
+[![Unittests](https://github.com/rmk-ch/autoImageRenamer/actions/workflows/ci.yml/badge.svg)](https://github.com/rmk-ch/autoImageRenamer/actions/workflows/ci.yml)
 
 
 ## Installation
