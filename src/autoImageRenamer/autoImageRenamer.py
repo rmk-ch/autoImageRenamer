@@ -296,33 +296,43 @@ class AutoImageRenamer:
         reDateTime = re.match(datetimePattern, filenameWithoutPath)
         if reDateTime is not None:
             try:
+                year = int(reDateTime.group(1))
+                month = int(reDateTime.group(2))
+                day = int(reDateTime.group(3))
+                hour = int(reDateTime.group(4))
+                minute = int(reDateTime.group(5))
+                second = int(reDateTime.group(6))
+
                 datetime_obj = datetime(
-                    year=int(reDateTime.group(1)),
-                    month=int(reDateTime.group(2)),
-                    day=int(reDateTime.group(3)),
-                    hour=int(reDateTime.group(4)),
-                    minute=int(reDateTime.group(5)),
-                    second=int(reDateTime.group(6)),
+                    year=year,
+                    month=month,
+                    day=day,
+                    hour=hour,
+                    minute=minute,
+                    second=second,
                 )
             except Exception as e:
-                logger.warning(f"Datetime creation (A) failed with {e}")
+                logger.warning(f"Datetime creation of file {filename} (A) failed (extracted date would be {year}-{month}-{day} {hour}-{minute}-{second} (y-m-d h-m-s)) with {e}")
         else:
             # if not found everything, try day only
             reDate = re.match(datePattern, filenameWithoutPath)
             if reDate is not None:
                 try:
+                    year = int(reDate.group(1))
+                    month = int(reDate.group(2))
+                    day = int(reDate.group(3))
                     # set datetime to end of day for later minimum usage. Mark microsecond to maximum to revert
                     datetime_obj = datetime(
-                        year=int(reDate.group(1)),
-                        month=int(reDate.group(2)),
-                        day=int(reDate.group(3)),
+                        year=year,
+                        month=month,
+                        day=day,
                         hour=23,
                         minute=59,
                         second=59,
                         microsecond=999,
                     )
                 except Exception as e:
-                    logger.warning(f"Datetime creation (A) failed with {e}")
+                    logger.warning(f"Datetime creation of file {filename} (B) failed (extracted date would be {year}-{month}-{day} (y-m-d)) with {e}")
             else:
                 logger.debug(
                     f"Neither datetime nor date pattern found in filename {filename}"
