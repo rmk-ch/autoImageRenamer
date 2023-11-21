@@ -2,7 +2,6 @@ import unittest
 import sys
 import os
 
-sys.path.append(os.path.abspath("./src"))
 from autoImageRenamer import autoImageRenamer
 
 
@@ -21,19 +20,22 @@ class Test_PrivateDataset(unittest.TestCase):
 
         # Set up expected
         mapping = dict()
-        mapping["2021-01-12.jpg"] = "2021-01-12.jpg"  # Date only, no EXIF
-        mapping["20210605_153227.jpg"] = "2021-06-05_15-32-27.jpg"  # Samsung A51
-        mapping["DSC07863.ARW"] = "2021-06-21_10-46-36.arw"  # Sony RX100
-        mapping["IMG_20210605_152957.jpeg"] = "2021-06-05_15-29-57_001.jpeg"  # Signal
+        # mapping["2021-01-12.jpg"] = "2021-01-12.jpg"  # Date only, no EXIF
+        # mapping["20210605_153227.jpg"] = "2021-06-05_15-32-27.jpg"  # Samsung A51
+        # mapping["DSC07863.ARW"] = "2021-06-21_10-46-36.arw"  # Sony RX100
+        # mapping["IMG_20210605_152957.jpeg"] = "2021-06-05_15-29-57_001.jpeg"  # Signal
+        # mapping[
+        #     "IMG_20210605_152957-0033.jpeg"
+        # ] = "2021-06-05_15-29-57_002.jpeg"  # Copy of previous
+        # mapping[
+        #     "Photo-2021-06-21-10-17-40_8255.JPG"
+        # ] = "2021-06-21_10-17-40.jpg"  # iPhone
+        # mapping[
+        #     "Video-2021-06-22-10-12-58_8280.MOV"
+        # ] = "2021-06-22_10-12-58.mov"  # iPhone Video
         mapping[
-            "IMG_20210605_152957-0033.jpeg"
-        ] = "2021-06-05_15-29-57_002.jpeg"  # Copy of previous
-        mapping[
-            "Photo-2021-06-21-10-17-40_8255.JPG"
-        ] = "2021-06-21_10-17-40.jpg"  # iPhone
-        mapping[
-            "Video-2021-06-22-10-12-58_8280.MOV"
-        ] = "2021-06-22_10-12-58.mov"  # iPhone Video
+            "IMG_4827.MOV"
+        ] = "2022-06-14_10-23-35.mov"
 
         sourcePath_norm = os.path.normpath(source)
         targetPath_norm = os.path.normpath(target)

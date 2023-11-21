@@ -105,7 +105,4 @@ venv.bak/
 # mypy
 .mypy_cache/
 *~$*
-/Icon/raspberry_pi1600.png
-/Icon/stock-vector-chicken-logo-design-573616531.jpg
-
 *.orig

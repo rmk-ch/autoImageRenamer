@@ -4,8 +4,11 @@ from enum import Enum
 from datetime import datetime
 from loguru import logger
 import exifread
+import hachoir.parser
+import hachoir.metadata
 import re
 import hashlib
+
 
 
 def getFileHash(filename: str):
@@ -84,7 +87,7 @@ class AutoImageRenamer:
             oldFilePath = os.path.normpath(os.path.join(self.__inputFolder, fileName))
 
             # try various options
-            times = self.getTimes(oldFilePath)
+            times = self.getTimes(oldFilePath, fileExt)
             if len(times) < 1:
                 logger.warning(
                     f"Found no suitable time to rename for file {oldFilePath}. Skipping this file."
@@ -211,14 +214,17 @@ class AutoImageRenamer:
         for old, new in finalFilenames.items():
             act(old, new, self.__fromMethods[old])
 
-    def getTimes(self, filename):
+    def getTimes(self, filename : str, fileExt : str):
 
         times = dict()
-        try:
-            exifTimes = self.getExifTimes(filename)
-            times.update(exifTimes)
-        except:
-            pass
+        if fileExt.lower() == ".mov":
+            times["mov"] = self.getFileHachoir(filename)
+        else:
+            try:
+                exifTimes = self.getExifTimes(filename)
+                times.update(exifTimes)
+            except:
+                pass
 
         try:
             times["filename"] = self.getFilenameTime(filename)
@@ -283,7 +289,7 @@ class AutoImageRenamer:
 
         return datetime_objs
 
-    def getFilenameTime(self, filename):
+    def getFilenameTime(self, filename : str) -> datetime:
         ## Extract date and time from file name and return datetime object
 
         filenameWithoutPath = os.path.basename(filename)
@@ -347,6 +353,18 @@ class AutoImageRenamer:
         creationTimestamp = os.stat(filename).st_ctime
         datetime_obj = datetime.fromtimestamp(creationTimestamp)
         logger.debug(f"File creation time {datetime_obj} found from {filename}")
+        return datetime_obj
+    
+
+    def getFileHachoir(self, filename):
+        """ Get hachcoir metadata for MOV files """
+        try:
+            parser = hachoir.parser.createParser(filename)
+            metadata = hachoir.metadata.extractMetadata(parser)
+            datetime_obj = metadata.get('creation_date')
+        except Exception as e:
+            logger.debug(f"Parsing of file {filename} failed with hachoir.")
+            datetime_obj = None
         return datetime_obj
 
     def getFinalRenames(self):
