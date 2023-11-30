@@ -131,6 +131,7 @@ class AutoImageRenamer:
 
         # Actual Renames
         self.takeAction(self.__finalRenames, self.__action)
+        logger.info("All done! Byebye!")
 
     def findOldestTime(self, times):
         if len(times) < 1:
