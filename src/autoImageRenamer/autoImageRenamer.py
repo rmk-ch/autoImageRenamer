@@ -8,6 +8,7 @@ import hachoir.parser
 import hachoir.metadata
 import re
 import hashlib
+import traceback as tb
 
 
 
@@ -193,7 +194,10 @@ class AutoImageRenamer:
 
             def act(old, new, methods):
                 logger.info(f"Renaming {old} to {new} (methods {methods})")
-                os.rename(old, new)
+                try:
+                    os.rename(old, new)
+                except Exception as e:
+                    logger.error(f"Renaming excepted with {''.join(tb.format_exception(type(e), e, None))}")
 
         elif action == self.Action.copy:
 
