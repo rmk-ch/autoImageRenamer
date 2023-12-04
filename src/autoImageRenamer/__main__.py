@@ -5,14 +5,15 @@ subsequently selecting the oldest of these datetimes. The file mode is then eith
 from A to B.
 
 Usage:
-    autoImageRenamer.py rename [<source>] [<target>] [-i] [-l [<logfile>]]
-    autoImageRenamer.py copy [<source>] [<target>] [-i] [-l [<logfile>]]
-    autoImageRenamer.py dryrun [<source>] [<target>] [-i] [-l [<logfile>]]
+    autoImageRenamer.py rename [<source>] [<target>] [-i] [-a] [-l [<logfile>]]
+    autoImageRenamer.py copy [<source>] [<target>] [-i] [-a] [-l [<logfile>]]
+    autoImageRenamer.py dryrun [<source>] [<target>] [-i] [-a] [-l [<logfile>]]
 
 Options:
     <source>            Source directory [default: .]
     <target>            Target directory [default: <source>]
     -i --interactive    Ask for confirmation before action
+    -a --append         Append current filename to date
     -l --logfile        Target logfile [default: ./autoImageRenamer.log]
 """
 
@@ -49,7 +50,7 @@ def main():
         logger.add(logfile, level="DEBUG")
 
 
-    x = AutoImageRenamer( arguments['<source>'], arguments['<target>'], action, arguments['--interactive'])
+    x = AutoImageRenamer( arguments['<source>'], arguments['<target>'], action, arguments['--interactive'], arguments['--append'])
 
 if __name__ == '__main__':
     main()

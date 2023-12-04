@@ -58,11 +58,12 @@ class AutoImageRenamer:
         rename = 2
         dryrun = 3
 
-    def __init__(self, inputFolder, outputFolder, action, interactive):
+    def __init__(self, inputFolder, outputFolder, action, interactive, append):
         self.__inputFolder = inputFolder
         self.__outputFolder = outputFolder
         self.__action = action
         self.__interactive = interactive
+        self.__append = append
 
         logger.info(f"Doing {action.name} from {inputFolder} to {outputFolder}")
 
@@ -77,7 +78,9 @@ class AutoImageRenamer:
         for fileName in fileNames:
 
             # Get the file extension
-            fileExt = os.path.splitext(fileName)[1]
+            filenameParts = os.path.splitext(fileName)
+            fileExt = filenameParts[1]
+            fileNoext = filenameParts[0]
 
             # If the file does not have a valid file extension
             # then skip it
@@ -108,7 +111,11 @@ class AutoImageRenamer:
                 format = self.__DATE_FORMAT
             else:
                 format = self.__DATETIME_FORMAT
-            newFilename = oldest.strftime(format) + fileExt.lower()
+            if self.__append:
+                append = f"-{fileNoext}"
+            else:
+                append = ""
+            newFilename = oldest.strftime(format) + append + fileExt.lower()
             proposedRenames[oldFilePath] = os.path.join(outputFolder, newFilename)
 
         # Find collisions in proposal
