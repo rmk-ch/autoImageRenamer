@@ -18,6 +18,7 @@ class Test_ArtificialDatasets(unittest.TestCase):
         self.__target = os.path.join(os.getcwd(), "tests", "tempOut")
         self.__action = autoImageRenamer.AutoImageRenamer.Action.dryrun
         self.__interactive = False
+        self.__append = False
 
         self.__DATE_FORMAT = "%Y-%m-%d"
         self.__DATETIME_FORMAT = f"{self.__DATE_FORMAT}_%H-%M-%S"
@@ -57,7 +58,7 @@ class Test_ArtificialDatasets(unittest.TestCase):
 
         # run DUT
         ir = autoImageRenamer.AutoImageRenamer(
-            self.__source, self.__target, self.__action, self.__interactive
+            self.__source, self.__target, self.__action, self.__interactive, self.__append
         )
         actual = ir.getFinalRenames()
 
@@ -92,7 +93,7 @@ class Test_ArtificialDatasets(unittest.TestCase):
 
         # run DUT
         ir = autoImageRenamer.AutoImageRenamer(
-            self.__source, self.__target, self.__action, self.__interactive
+            self.__source, self.__target, self.__action, self.__interactive, self.__append
         )
         actual = ir.getFinalRenames()
 
@@ -137,7 +138,7 @@ class Test_ArtificialDatasets(unittest.TestCase):
 
         # run DUT
         ir = autoImageRenamer.AutoImageRenamer(
-            self.__source, self.__target, self.__action, self.__interactive
+            self.__source, self.__target, self.__action, self.__interactive, self.__append
         )
         actual = ir.getFinalRenames()
 
@@ -178,7 +179,7 @@ class Test_ArtificialDatasets(unittest.TestCase):
 
         # run DUT
         ir = autoImageRenamer.AutoImageRenamer(
-            self.__source, self.__target, self.__action, self.__interactive
+            self.__source, self.__target, self.__action, self.__interactive, self.__append
         )
         actual = ir.getFinalRenames()
 
@@ -219,7 +220,7 @@ class Test_ArtificialDatasets(unittest.TestCase):
 
         # run DUT
         ir = autoImageRenamer.AutoImageRenamer(
-            self.__source, self.__target, self.__action, self.__interactive
+            self.__source, self.__target, self.__action, self.__interactive, self.__append
         )
         actual = ir.getFinalRenames()
 
@@ -239,7 +240,7 @@ class Test_ArtificialDatasets(unittest.TestCase):
 
     def test_emptyFolder_noException(self):
         ir = autoImageRenamer.AutoImageRenamer(
-            self.__source, self.__target, self.__action, self.__interactive
+            self.__source, self.__target, self.__action, self.__interactive, self.__append
         )
 
 
