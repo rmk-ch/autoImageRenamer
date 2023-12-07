@@ -238,6 +238,43 @@ class Test_ArtificialDatasets(unittest.TestCase):
         for sourceFile, targetFile in expected.items():
             self.assertEqual(actual[sourceFile], targetFile)
 
+    def test_append(self):
+        # create datetime objects and files randomly
+        nFiles = 5
+        tagIds = ["datetime_original", "datetime_digitized", "datetime"]
+        dtime = dict()
+        mapping = dict()
+
+        for f in range(0, nFiles):
+            filename = f"f{f}.jpg"
+            dtime = TestHelpers.getRandomDatetime(1900)
+            mapping[filename] = f"{dtime.strftime(self.__DATETIME_FORMAT)}-{filename}"
+            tagDict = dict()
+            tagDict[tagIds[f % len(tagIds)]] = dtime
+            TestHelpers.FileCreator(os.path.join(self.__source, filename), tagDict)
+
+        self.__append = True
+
+        # run DUT
+        ir = autoImageRenamer.AutoImageRenamer(
+            self.__source, self.__target, self.__action, self.__interactive, self.__append
+        )
+        actual = ir.getFinalRenames()
+
+        sourcePath_norm = os.path.normpath(self.__source)
+        targetPath_norm = os.path.normpath(self.__target)
+
+        expected = dict()
+        for sourceFile, targetFile in mapping.items():
+            key = os.path.join(sourcePath_norm, sourceFile)
+            value = os.path.join(targetPath_norm, targetFile)
+            expected[key] = value
+
+        # Compare
+        self.assertEqual(actual.keys(), expected.keys())
+        for sourceFile, targetFile in expected.items():
+            self.assertEqual(actual[sourceFile], targetFile)
+
     def test_emptyFolder_noException(self):
         ir = autoImageRenamer.AutoImageRenamer(
             self.__source, self.__target, self.__action, self.__interactive, self.__append
