@@ -372,11 +372,25 @@ class AutoImageRenamer:
         """ Get hachcoir metadata for MOV files """
         try:
             parser = hachoir.parser.createParser(filename)
-            metadata = hachoir.metadata.extractMetadata(parser)
+        except Exception as e:
+            logger.debug(f"Parser creation failed on file {filename} with hachoir.")
+            return None
+        if not parser:
+            logger.debug(f"Parsing of file {filename} failed with hachoir.")
+            return None
+
+        with parser:
+            try:
+                metadata = hachoir.metadata.extractMetadata(parser)
+            except Exception as err:
+                logger.debug(f"Metadata extraction failed on file {filename} with hachoir.")
+        
+        try:
             datetime_obj = metadata.get('creation_date')
         except Exception as e:
-            logger.debug(f"Parsing of file {filename} failed with hachoir.")
+            logger.debug(f"creation_date extraction failed non file {filename} failed with hachoir.")
             datetime_obj = None
+
         return datetime_obj
 
     def getFinalRenames(self):

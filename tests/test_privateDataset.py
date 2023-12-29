@@ -13,9 +13,10 @@ class Test_PrivateDataset(unittest.TestCase):
         source = os.path.join(os.getcwd(), "tests", "privateDataset")
         target = os.path.join(os.getcwd(), "tests", "tempOut")
         interactive = False
+        append = False
 
         # run DUT
-        ir = autoImageRenamer.AutoImageRenamer(source, target, action, interactive)
+        ir = autoImageRenamer.AutoImageRenamer(source, target, action, interactive, append)
         actual = ir.getFinalRenames()
 
         # Set up expected
