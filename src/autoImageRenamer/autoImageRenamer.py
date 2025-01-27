@@ -123,7 +123,7 @@ class AutoImageRenamer:
 
         # Print interactively
         if self.__interactive:
-            self.takeAction(self.__finalRenames, self.Action.dryrun)
+            n_files_renamed = self.takeAction(self.__finalRenames, self.Action.dryrun)
             if self.__action == self.Action.dryrun:
                 logger.info(
                     "Finished. If you're happy, rerun it with actual rename/copy command"
@@ -137,8 +137,8 @@ class AutoImageRenamer:
             logger.info("Continuing...")
 
         # Actual Renames
-        self.takeAction(self.__finalRenames, self.__action)
-        logger.info("All done! Byebye!")
+        n_files_renamed = self.takeAction(self.__finalRenames, self.__action)
+        logger.info(f"All done! {n_files_renamed} files renamed/copied. Byebye!")
 
     def findOldestTime(self, times):
         if len(times) < 1:
@@ -196,7 +196,7 @@ class AutoImageRenamer:
 
         return proposals
 
-    def takeAction(self, finalFilenames, action):
+    def takeAction(self, finalFilenames, action) -> int:
         # Setup action
         if action == self.Action.rename:
 
@@ -225,6 +225,8 @@ class AutoImageRenamer:
         # Act!
         for old, new in finalFilenames.items():
             act(old, new, self.__fromMethods[old])
+
+        return len(finalFilenames)
 
     def getTimes(self, filename : str, fileExt : str):
 
@@ -289,7 +291,7 @@ class AutoImageRenamer:
                     datetime_str, "%Y:%m:%d %H:%M:%S"
                 )
             except:
-                logger.warning(
+                logger.debug(
                     f"EXIF tag {tagId} string {datetime_str} not parsable in {filename}"
                 )
                 datetime_objs[tagId] = None
@@ -330,7 +332,7 @@ class AutoImageRenamer:
                     second=second,
                 )
             except Exception as e:
-                logger.warning(f"Datetime creation of file {filename} (A) failed (extracted date would be {year}-{month}-{day} {hour}-{minute}-{second} (y-m-d h-m-s)) with {e}")
+                logger.debug(f"Datetime creation of file {filename} (A) failed (extracted date would be {year}-{month}-{day} {hour}-{minute}-{second} (y-m-d h-m-s)) with {e}")
         else:
             # if not found everything, try day only
             reDate = re.match(datePattern, filenameWithoutPath)
@@ -350,7 +352,7 @@ class AutoImageRenamer:
                         microsecond=999,
                     )
                 except Exception as e:
-                    logger.warning(f"Datetime creation of file {filename} (B) failed (extracted date would be {year}-{month}-{day} (y-m-d)) with {e}")
+                    logger.info(f"Datetime creation of file {filename} (B) failed (extracted date would be {year}-{month}-{day} (y-m-d)) with {e}")
             else:
                 logger.debug(
                     f"Neither datetime nor date pattern found in filename {filename}"
